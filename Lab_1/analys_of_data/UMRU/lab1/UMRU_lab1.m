@@ -34,20 +34,21 @@ dVx = Vxid - Vx_o;
 dVy = Vyid - Vy_o;
 ddPsi = Omid - dpsi;
 %Получим скоростные интегралы для каждой из итераций скоростей
-integraDVxdt(1,1) = t(1)*dVx(1,1);
+integraDVxdt(1,1) = dVx(1,1);
 for i = 2:1:length(dVx)
-integraDVxdt(i,1) = t(i)*dVx(i,1)+integraDVxdt(i-1,1);
+integraDVxdt(i,1) = dVx(i,1)+integraDVxdt(i-1,1);
 end 
-
-integraDVydt(1,1) = t(1)*dVy(1,1);
+integraDVxdt = integraDVxdt*0.1;
+integraDVydt(1,1) = dVy(1,1);
 for i = 2:1:length(dVx)
-integraDVydt(i,1) = t(i)*dVy(i,1)+integraDVydt(i-1,1);
+integraDVydt(i,1) = dVy(i,1)+integraDVydt(i-1,1);
 end 
-
-integraDdpsi(1,1) = t(1)*ddPsi(1,1);
+integraDVydt = integraDVydt*0.1;
+integraDdpsi(1,1) = ddPsi(1,1);
 for i = 2:1:length(dVx)
-integraDdpsi(i,1) = t(i)*ddPsi(i,1)+integraDdpsi(i-1,1);
+integraDdpsi(i,1) = ddPsi(i,1)+integraDdpsi(i-1,1);
 end 
+integraDdpsi = integraDdpsi*0.1;
 %зададим В - блочную матрицу столбцов свободных членов
 B = zeros(length(dVx)*3,1);
 k = 1;
@@ -75,3 +76,16 @@ end
 for i = 1:1:length(dVx)
 Yvost(i,1) = y0(i,1)+Vyid(i,1)*dtzap+integraDVydt(i,1);
 end
+
+hold on;
+grid on;
+for i = 1:1:length(dVx)
+plot(x0,y0,'r');
+plot(Xid,Yid,'b');
+plot(Xvost,Yvost,'g');
+end
+
+xlabel('X,м');
+ylabel('Y,м');
+title('Движение мекано-платформы youBot');
+legend({'Движение платформы снятое датчиками','Идеальное предполагаемое движение плафтормы','Восстановленное движение платформы'},'Location','southwest');
