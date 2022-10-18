@@ -1,6 +1,0 @@
-﻿  Control_of_robots_lab1.cpp
-C:\Users\Даниил\source\repos\Control_of_robots_lab1\Control_of_robots_lab1\Control_of_robots_lab1.cpp(35,14): warning C4018: <: несоответствие типов со знаком и без знака
-C:\Users\Даниил\source\repos\Control_of_robots_lab1\Control_of_robots_lab1\Control_of_robots_lab1.cpp(42,14): warning C4018: <: несоответствие типов со знаком и без знака
-C:\Users\Даниил\source\repos\Control_of_robots_lab1\Control_of_robots_lab1\Control_of_robots_lab1.cpp(49,14): warning C4018: <: несоответствие типов со знаком и без знака
-C:\Users\Даниил\source\repos\Control_of_robots_lab1\Control_of_robots_lab1\Control_of_robots_lab1.cpp(98,23): warning C4018: <: несоответствие типов со знаком и без знака
-  Control_of_robots_lab1.vcxproj -> C:\Users\Даниил\source\repos\Control_of_robots_lab1\Debug\Control_of_robots_lab1.exe
