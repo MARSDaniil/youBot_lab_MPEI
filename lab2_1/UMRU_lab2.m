@@ -1,15 +1,7 @@
 %из файла полученного от робота вытащим в массив
 %и разобьем каждый столбец на переменные
-inputDataRob = dlmread('D:\UMRU\lab2\S-12b-19_lab2_brig2_output (1).txt');
+inputDataRob = dlmread('D:\UMRU\lab2_1\S-12b-19_lab2_brig2_output.txt');
 t = inputDataRob(:,1);
-omega_1 = inputDataRob(:,2);
-omega_2= inputDataRob(:,3);
-omega_3= inputDataRob(:,4);
-omega_4= inputDataRob(:,5);
-M1= inputDataRob(:,6);
-M2= inputDataRob(:,7);
-M3= inputDataRob(:,8);
-M4= inputDataRob(:,9);
 Vx_o= inputDataRob(:,10);
 Vy_o= inputDataRob(:,11);
 dpsi= inputDataRob(:,12);
@@ -17,15 +9,17 @@ x0= inputDataRob(:,13);
 y0= inputDataRob(:,14);
 psi = inputDataRob(:,15);
 %откроем файл с данными по идеальным перемещениям
-inputDataIdeal = dlmread('D:\UMRU\lab2\perfect_pointUV1 (1).txt');
+inputDataIdeal = dlmread('D:\UMRU\lab2_1\perfect_pointUV1 (1).txt');
 Xid = inputDataIdeal(:,1);
 Yid = inputDataIdeal(:,2);
 psi_id = inputDataIdeal(:,3);
 %откроем файл с данными по идеальным скоростям
-inputDataIdSpeed = dlmread('D:\UMRU\lab2\S-12b-19_lab_2_brig_2.txt');
+inputDataIdSpeed = dlmread('D:\UMRU\lab2_1\S-12b-19_lab_2_brig_2.txt');
 Vxid = inputDataIdSpeed(:,1);
 Vyid = inputDataIdSpeed(:,2);
 Omid = inputDataIdSpeed(:,3);
+f = 1:1:length(Vx_o);
+f= f';
 %Найдем рассогласование по координатам
 dX = Xid-x0;
 dY = Yid -y0;
@@ -80,6 +74,106 @@ for i = 1:1:length(dVx)
 Psivost(i,1) = psi(i,1)+Omid(i,1)*dtzap+integraDdpsi(i,1);
 end
 
+
+%НАЧНЕМ ЗАНИМАТЬСЯ ООС
+dt = 0.1;
+%Найдем ускорения
+%Зададим начальные ускорения
+ddVx(1) = 0;
+ddVy(1) = 0;
+ddOm(1) = 0;
+%Найдем со второго элемента до конца
+for i =2 :1:length(dVx)
+ddVx(i,1) = (dVx(i,1)- dVx(i-1,1))/(dt);
+ddVy(i,1) = (dVy(i,1)- dVy(i-1,1))/(dt);
+ddOm(i,1) = (ddPsi(i,1)- ddPsi(i-1,1))/(dt);
+end
+%Получаем паразитные ускорения в связанной системе координат
+%получим восставновленную траекторию движения по обратной связи
+
+for i =1 :1:length(dVx)
+xp(i,1) = 0;
+yp(i,1) = 0;
+psip(i,1) = 0;
+end
+Vxu(1,1) = Vxid(1,1);
+Vyu(1,1) = Vyid(1,1);
+Omu(1,1) = Omid(1,1);
+
+Vxp(2,1) = Vxid(2,1)+ddVx(2,1)*dt;
+xp(2,1) = Vxp(2,1) *dt+xp(2-1,1);
+Vxu(2,1) = Vxid(2,1)+ (Vxid(2,1)-Vxp(2,1))+ (Xid(2,1)-xp(2,1))*dt;
+Vyp(2,1) = Vyid(2,1)+ddVy(2,1)*dt;
+yp(2,1) = Vyp(2,1) *dt+yp(2-1,1);
+Vyu(2,1) = Vyid(2,1)+ (Vyid(2,1)-Vyp(2,1))+ (Yid(2,1)-yp(2,1))*dt;
+Omp(2,1) = Omid(2,1)+ddOm(2,1)*dt;
+psip(2,1) = Omp(2,1) *dt+psip(2-1,1);
+Omu(2,1) = Omid(2,1)+ (Omid(2,1)-Omp(2,1))+ (psi_id(2,1)-psip(2,1))*dt;
+dt = 0.1; kp = 0.4; ki = 1;
+
+for i =3 :1:length(dVx)
+Vxp(i,1) = Vxu(i-1,1)+ddVx(i,1)*dt;
+xp(i,1) = Vxp(i,1) *dt+xp(i-1,1);
+Vxu(i,1) = Vxid(i,1)+ kp*(Vxid(i,1)-Vxp(i,1))+ (Xid(i,1)-xp(i,1))*ki;
+Vyp(i,1) = Vyu(i-1,1)+ddVy(i,1)*dt;
+yp(i,1) = Vyp(i,1) *dt+yp(i-1,1);
+Vyu(i,1) = Vyid(i,1)+ kp*(Vyid(i,1)-Vyp(i,1))+ (Yid(i,1)-yp(i,1))*ki;
+Omp(i,1) = Omu(i-1,1)+ddOm(i,1)*dt;
+psip(i,1) = Omp(i,1) *dt+psip(i-1,1);
+Omu(i,1) = Omid(i,1)+ kp*(Omid(i,1)-Omp(i,1))+ (psi_id(i,1)-psip(i,1))*ki;
+end
+
+dt = 0.1;
+%Зададим углол Psi
+psiS(1,1) = 0;
+for i =2 :1:length(dVx)
+psiS(i,1) = psiS(i-1,1) + Omp(i,1)*dt;
+end
+%Найдем VXp и VYp
+VXp = Vxp.*cos(psiS)-Vyp.*sin(psiS);
+VYp = Vxp.*sin(psiS)+Vyp.*cos(psiS);
+%Проинтегрируем полученные скорости для получения Xp и Yp - движения по
+%заданной траектории
+Xp(1) = 0;
+Yp(1) = 0;
+for i =2 :1:length(dVx)
+Xp(i,1) = Xp(i-1,1) + VXp(i,1)*dt;
+Yp(i,1) = Yp(i-1,1) + VYp(i,1)*dt;
+end
+
+%Откроем лабу с реальной ООС 
+
+inputDataRobRealOOS = dlmread('D:\UMRU\lab456\UtkinVolosh_lab5_brig1.txt');
+
+x0RealOOS= inputDataRobRealOOS(:,13);
+y0RealOOS= inputDataRobRealOOS(:,14);
+psiRealOOS = inputDataRobRealOOS(:,15);
+
+figure; 
+hold on;
+grid on;
+for i = 1:1:length(dVx)
+plot(x0,y0,'r');
+plot(Xid,Yid,'b');
+plot(Xvost,Yvost,'g');
+plot(Xp,Yp,'m');
+plot(x0RealOOS,y0RealOOS,'k');
+end
+
+xlabel('X,м');
+ylabel('Y,м');
+title('Движение мекано-платформы youBot');
+legend({'Движение платформы снятое датчиками',
+    'Идеальное предполагаемое движение плафтормы',
+    'Восстановленное движение платформы',
+    'Теоретическое движение платформы с ООС',
+    'Реальное движение платформы с ООС'
+    },'Location','southwest');
+
+hold off;
+
+%построим графики по отдельности для большей наглядности
+figure; 
 hold on;
 grid on;
 for i = 1:1:length(dVx)
@@ -91,22 +185,134 @@ end
 xlabel('X,м');
 ylabel('Y,м');
 title('Движение мекано-платформы youBot');
-legend({'Движение платформы снятое датчиками','Идеальное предполагаемое движение плафтормы','Восстановленное движение платформы'},'Location','southwest');
+legend({'Движение платформы снятое датчиками',
+    'Идеальное предполагаемое движение плафтормы',
+    'Восстановленное движение платформы'
+    },'Location','southwest');
 
 hold off;
-grid off;
 
-%определим СКО и Мат.Ожидание для dX,dY,delPsi
+figure; 
+hold on;
+grid on;
+for i = 1:1:length(dVx)
+
+plot(Xid,Yid,'b');
+
+plot(Xp,Yp,'m');
+plot(x0RealOOS,y0RealOOS,'k');
+end
+
+xlabel('X,м');
+ylabel('Y,м');
+title('Движение мекано-платформы youBot');
+legend({'Идеальное предполагаемое движение плафтормы',
+    'Теоретическое движение платформы с ООС',
+    'Реальное движение платформы с ООС'
+    },'Location','southwest');
+
+hold off;
+
+
+%введем dx,dy,dpsi
+%для реальной и востановленной
+%для реальной и модели с обратной связью(для лр_№_2)
+%для реальной и модели оос на роботе(для 4-6)
+
+
+
+%dx 
+dxReal = x0-Xid;
+dxvost = Xvost-Xid;
+dxTheorOOS = Xp-Xid;
+dxRealOOS = x0RealOOS - Xid;
+hold off;
+figure; 
+hold on;
+grid on;
+plot(f,dxReal,'b');
+plot(f,dxvost,'g');
+plot(f,dxTheorOOS,'m');
+plot(f,dxRealOOS,'k');
+xlabel('i');
+ylabel('dX,m');
+legend({'Погрешность между реальной и идеальной траекторией',
+    'Погрешность между идеальной и восстановленной траекторией',
+    'Погрешность между идеальной и теоретической траекторией с ООС',
+    'Погрешность между идеальной и реальной траекторией с ООС'
+    },'Location','southwest');
+
+title('График погрешностей dX');
+
+hold off;
+%dy 
+
+dyReal = y0-Yid;
+dyvost = Yvost-Yid;
+dyTheorOOS = Yp-Yid;
+dyRealOOS = y0RealOOS - Yid;
+hold off;
+figure; 
+hold on;
+grid on;
+plot(f,dyReal,'b');
+plot(f,dyvost,'g');
+plot(f,dyTheorOOS,'m');
+plot(f,dyRealOOS,'k');
+xlabel('i');
+ylabel('dY,m');
+legend({'Погрешность между реальной и идеальной траекторией',
+    'Погрешность между идеальной и восстановленной траекторией',
+    'Погрешность между идеальной и теоретической траекторией с ООС',
+    'Погрешность между идеальной и реальной траекторией с ООС'
+    },'Location','southwest');
+
+title('График погрешностей dY');
+
+hold off;
+
+%dPsi 
+dPsiReal = psi-psi_id;
+dPsivost = Psivost-psi_id;
+dPsiTheorOOS = psiS-psi_id;
+dPsiRealOOS = psiRealOOS - psi_id;
+hold off;
+figure; 
+hold on;
+grid on;
+plot(f,dPsiReal,'b');
+plot(f,dPsivost,'g');
+plot(f,dPsiTheorOOS,'m');
+plot(f,dPsiRealOOS,'k');
+
+plot(f,dPsivost,'r');
+
+xlabel('i');
+ylabel('dPsi,рад');
+legend({'Погрешность между реальным и идеальным углом поворота',
+    'Погрешность между идеальным и восстановленным углом поворота',
+    'Погрешность между идеальным и теоретическим углом поворота с ООС',
+    'Погрешность между идеальным и реальным углом поворота с ООС'
+    },'Location','southwest');
+title('График погрешностей dPsi');
+
+hold off;
+
+
+
+%определим СКО и Мат.Ожидание для dX,dY,delPsi(ДЛЯ Реальной снятой)
 
 %найдем среднее значение
 dXsr = 0; dYsr = 0; delPsisr = 0;
-for i = 1:1:200
+for i = 1:1:length(dVx)
     dXsr = dXsr + dX(i);
     dYsr = dYsr + dY(i);
     delPsisr = delPsisr + delPsi(i);
 end
 %dXsr dYsr delPsisr так же будут матОжиданием
-dXsr = dXsr/200; dYsr = dYsr/200; delPsisr = delPsisr/200; 
+dXsr = dXsr/length(dVx)
+dYsr = dYsr/length(dVx)
+delPsisr = delPsisr/length(dVx)
 
 %найдем СКО 
 dXsrSumm = 0; dYsrSumm = 0; delPsisrSumm = 0;
@@ -116,50 +322,151 @@ for i = 1:1:200
     delPsisrSumm = delPsisrSumm + (delPsi(i)-delPsisr)^2;
 end
 
-SKOdX = sqrt(dXsrSumm/199);
-SKOdY = sqrt(dYsrSumm/199);
-SKOdelPsi = sqrt(delPsisrSumm/199);
+SKOdX = sqrt(dXsrSumm/(length(dVx)-1))
+SKOdY = sqrt(dYsrSumm/(length(dVx)-1))
+SKOdelPsi = sqrt(delPsisrSumm/(length(dVx)-1))
 
-
-%определим СКО и Мат.Ожидание для dX_iv,dY_iv,delPsi_iv
+%определим СКО и Мат.Ожидание для dX_iv,dY_iv,delPsi_iv(ДЛЯ ВОСТАНОВЛЕННОЙ)
 %Найдем массивы dX_iv, dY_iv, delPsi_iv
 dX_iv = Xid - Xvost;
 dY_iv = Yid - Yvost;
 delPsi_iv = psi_id - Psivost;
 %найдем среднее значение
 dXsr_iv = 0; dYsr_iv = 0; delPsisr_iv = 0;
-for i = 1:1:200
+for i = 1:1:length(dVx)
     dXsr_iv = dXsr_iv + dX_iv(i);
     dYsr_iv = dYsr_iv + dY_iv(i);
     delPsisr_iv = delPsisr_iv + delPsi_iv(i);
 end
 %dXsr dYsr delPsisr так же будут матОжиданием
-dXsr_iv = dXsr_iv/200; dYsr_iv = dYsr_iv/200; delPsisr_iv = delPsisr_iv/200; 
+dXsr_iv = dXsr_iv/length(dVx)
+dYsr_iv = dYsr_iv/length(dVx)
+delPsisr_iv = delPsisr_iv/length(dVx)
 
 %найдем СКО 
 dXsrSumm_iv = 0; dYsrSumm_iv = 0; delPsisrSumm_iv = 0;
-for i = 1:1:200
+for i = 1:1:length(dVx)
     dXsrSumm_iv = dXsrSumm_iv + (dX_iv(i)-dXsr_iv)^2;
     dYsrSumm_iv = dYsrSumm_iv + (dY_iv(i)-dYsr_iv)^2;
     delPsisrSumm_iv = delPsisrSumm_iv + (delPsi_iv(i)-delPsisr_iv)^2;
 end
 
-SKOdX_iv = sqrt(dXsrSumm_iv/199);
-SKOdY_iv = sqrt(dYsrSumm_iv/199);
-SKOdelPsi_iv = sqrt(delPsisrSumm_iv/199);
+SKOdX_iv = sqrt(dXsrSumm_iv/(length(dVx)-1))
+SKOdY_iv = sqrt(dYsrSumm_iv/(length(dVx)-1))
+SKOdelPsi_iv = sqrt(delPsisrSumm_iv/(length(dVx)-1))
 
-%сравним СКО и МатОжидание, для они должны быть меньше 
 
-abs(SKOdX_iv )< abs(SKOdX)
-abs(SKOdY_iv )< abs(SKOdY)
-abs(SKOdelPsi_iv) < abs(SKOdelPsi)
-abs(dXsr_iv) < abs(dXsr)
-abs(dYsr_iv )< abs(dYsr)
-abs(delPsisr_iv) < abs(delPsisr)
+
+
+%определим СКО и Мат.Ожидание для dX_iv,dY_iv,delPsi_iv(ДЛЯ теоретической ООС)
+%Найдем массивы dX_ThOOS, dY_ThOOS, delPsi_ThOOS
+dX_ThOOS = Xid - Xp;
+dY_ThOOS = Yid - Yp;
+delPsi_ThOOS = psi_id - psiS;
+%найдем среднее значение
+dXsr_ThOOS = 0; dYsr_ThOOS = 0; delPsisr_ThOOS = 0;
+for i = 1:1:length(dVx)
+    dXsr_ThOOS = dXsr_ThOOS + dX_ThOOS(i);
+    dYsr_ThOOS = dYsr_ThOOS + dY_ThOOS(i);
+    delPsisr_ThOOS = delPsisr_ThOOS + delPsi_ThOOS(i);
+end
+%dXsr dYsr delPsisr так же будут матОжиданием
+dXsr_ThOOS = dXsr_ThOOS/length(dVx)
+dYsr_ThOOS = dYsr_ThOOS/length(dVx)
+delPsisr_ThOOS = delPsisr_ThOOS/length(dVx)
+
+%найдем СКО 
+dXsrSumm__ThOOS = 0; dYsrSumm__ThOOS = 0; delPsisrSumm__ThOOS = 0;
+for i = 1:1:length(dVx)
+    dXsrSumm__ThOOS = dXsrSumm__ThOOS + (dX_ThOOS(i)-dXsr_ThOOS)^2;
+    dYsrSumm__ThOOS = dYsrSumm__ThOOS + (dY_ThOOS(i)-dYsr_ThOOS)^2;
+    delPsisrSumm__ThOOS = delPsisrSumm__ThOOS + (delPsi_ThOOS(i)-delPsisr_ThOOS)^2;
+end
+
+SKOdX_ThOOS = sqrt(dXsrSumm__ThOOS/(length(dVx)-1))
+SKOdY_ThOOS = sqrt(dYsrSumm__ThOOS/(length(dVx)-1))
+SKOdelPsi_ThOOS = sqrt(delPsisrSumm__ThOOS/(length(dVx)-1))
+
+
+%определим СКО и Мат.Ожидание для dX_iv,dY_iv,delPsi_iv(ДЛЯ Реальной ООС)
+%Найдем массивы dX_ThOOS, dY_ThOOS, delPsi_ThOOS
+dX_RealOOS = Xid - x0RealOOS;
+dY_RealOOS = Yid - y0RealOOS;
+delPsi_RealOOS = psi_id - psiRealOOS;
+%найдем среднее значение
+dXsr_RealOOS = 0; dYsr_RealOOS = 0; delPsisr_RealOOS = 0;
+for i = 1:1:length(dVx)
+    dXsr_RealOOS = dXsr_RealOOS + dX_RealOOS(i);
+    dYsr_RealOOS = dYsr_RealOOS + dY_RealOOS(i);
+    delPsisr_RealOOS = delPsisr_RealOOS + delPsi_RealOOS(i);
+end
+%dXsr dYsr delPsisr так же будут матОжиданием
+dXsr_RealOOS = dXsr_RealOOS/length(dVx)
+dYsr_RealOOS = dYsr_RealOOS/length(dVx)
+delPsisr_RealOOS = delPsisr_RealOOS/length(dVx)
+
+%найдем СКО 
+dXsrSumm__RealOOS = 0; dYsrSumm__RealOOS = 0; delPsisrSumm__RealOOS = 0;
+for i = 1:1:length(dVx)
+    dXsrSumm__RealOOS = dXsrSumm__RealOOS + (dX_RealOOS(i)-dXsr_RealOOS)^2;
+    dYsrSumm__RealOOS = dYsrSumm__RealOOS + (dY_RealOOS(i)-dYsr_RealOOS)^2;
+    delPsisrSumm__RealOOS = delPsisrSumm__RealOOS + (delPsi_RealOOS(i)-delPsisr_RealOOS)^2;
+end
+
+SKOdX_RealOOS = sqrt(dXsrSumm__RealOOS/(length(dVx)-1))
+SKOdY_RealOOS = sqrt(dYsrSumm__RealOOS/(length(dVx)-1))
+SKOdelPsi_RealOOS = sqrt(delPsisrSumm__RealOOS/(length(dVx)-1))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%{
 %построим графики для скоростей,движениям по осям, рассхождениям 
 %перемещения
 %перемещение Х
-f = 1:1:200;
+figure; 
 hold on;
 grid on;
 
@@ -174,6 +481,7 @@ legend({'Движение платформы снятое датчиками','Идеальное предполагаемое движение
 
 hold off;
 %перемещение Y
+figure; 
 hold on;
 grid on;
 
@@ -188,6 +496,7 @@ legend({'Движение платформы снятое датчиками','Идеальное предполагаемое движение
 
 hold off;
 %отклонение по углу поворота
+figure; 
 hold on;
 grid on;
 
@@ -203,7 +512,8 @@ legend({'Движение платформы снятое датчиками','Идеальное предполагаемое движение
 hold off;
 
 %скорости
-%cкорости Х
+%перемещение Х
+figure; 
 hold on;
 grid on;
 
@@ -216,6 +526,7 @@ title('Скорости по Х');
 legend({'Скорость платформы снятая датчиками','Идеальная предполагаемая скорость плафтормы','Восстановленное движение платформы'},'Location','southwest');
 
 hold off;
+figure; 
 %скорость по оси Y 
 hold on;
 grid on;
@@ -229,6 +540,7 @@ title('Скорости по Y');
 legend({'Скорость платформы снятая датчиками','Идеальная предполагаемая скорость плафтормы','Восстановленное движение платформы'},'Location','southwest');
 
 hold off;
+figure; 
 %угловая скорость 
 hold on;
 grid on;
@@ -240,5 +552,33 @@ xlabel('i');
 ylabel('Om,рад/c');
 title('Угловая скорость');
 legend({'Скорость платформы снятая датчиками','Идеальная предполагаемая скорость плафтормы','Восстановленное движение платформы'},'Location','southwest');
+
+hold off;
+%}
+
+%dDPsi 
+dDPsiReal = dpsi-Omid;
+dDPsivost = Psivost-psi_id;
+dDPsiTheorOOS = psiS-psi_id;
+dDPsiRealOOS = psiRealOOS - psi_id;
+hold off;
+figure; 
+hold on;
+grid on;
+plot(f,dDPsiReal,'b');
+plot(f,dDPsivost,'g');
+plot(f,dDPsiTheorOOS,'m');
+plot(f,dDPsiRealOOS,'k');
+
+plot(f,dDPsivost,'r');
+
+xlabel('i');
+ylabel('dDPsi,рад/c');
+legend({'Погрешность между реальной и идеальной скоростью поворота',
+    'Погрешность между идеальной и восстановленной скоростью поворота',
+    'Погрешность между идеальной и теоретической скоростью поворота с ООС',
+    'Погрешность между идеальной и реальной скоростью поворота с ООС'
+    },'Location','southwest');
+title('График погрешностей dPsi');
 
 hold off;

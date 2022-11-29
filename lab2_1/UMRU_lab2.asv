@@ -1,15 +1,7 @@
 %из файла полученного от робота вытащим в массив
 %и разобьем каждый столбец на переменные
-inputDataRob = dlmread('D:\UMRU\lab1_1\S12b_19_brig_1.txt');
+inputDataRob = dlmread('D:\UMRU\lab2_1\S-12b-19_lab2_brig2_output.txt');
 t = inputDataRob(:,1);
-omega_1 = inputDataRob(:,2);
-omega_2= inputDataRob(:,3);
-omega_3= inputDataRob(:,4);
-omega_4= inputDataRob(:,5);
-M1= inputDataRob(:,6);
-M2= inputDataRob(:,7);
-M3= inputDataRob(:,8);
-M4= inputDataRob(:,9);
 Vx_o= inputDataRob(:,10);
 Vy_o= inputDataRob(:,11);
 dpsi= inputDataRob(:,12);
@@ -17,12 +9,12 @@ x0= inputDataRob(:,13);
 y0= inputDataRob(:,14);
 psi = inputDataRob(:,15);
 %откроем файл с данными по идеальным перемещениям
-inputDataIdeal = dlmread('D:\UMRU\lab1_1\perfect_squareUV1.txt');
+inputDataIdeal = dlmread('D:\UMRU\lab2_1\perfect_pointUV1 (1).txt');
 Xid = inputDataIdeal(:,1);
 Yid = inputDataIdeal(:,2);
 psi_id = inputDataIdeal(:,3);
 %откроем файл с данными по идеальным скоростям
-inputDataIdSpeed = dlmread('D:\UMRU\lab1_1\square.txt');
+inputDataIdSpeed = dlmread('D:\UMRU\lab2_1\S-12b-19_lab_2_brig_2.txt');
 Vxid = inputDataIdSpeed(:,1);
 Vyid = inputDataIdSpeed(:,2);
 Omid = inputDataIdSpeed(:,3);
@@ -151,7 +143,7 @@ end
 
 %Откроем лабу с реальной ООС 
 
-inputDataRobRealOOS = dlmread('D:\UMRU\lab456\UtkinVolosh_lab4_brig1.txt');
+inputDataRobRealOOS = dlmread('D:\UMRU\lab456\UtkinVolosh_lab5_brig1.txt');
 
 x0RealOOS= inputDataRobRealOOS(:,13);
 y0RealOOS= inputDataRobRealOOS(:,14);
@@ -305,6 +297,9 @@ legend({'Погрешность между реальным и идеальным углом поворота',
 title('График погрешностей dPsi');
 
 hold off;
+
+
+
 %определим СКО и Мат.Ожидание для dX,dY,delPsi(ДЛЯ Реальной снятой)
 
 %найдем среднее значение
@@ -560,3 +555,30 @@ legend({'Скорость платформы снятая датчиками','Идеальная предполагаемая скорость
 
 hold off;
 %}
+
+%dDPsi 
+dDPsiReal = dpsi-Omid;
+dDPsivost = Psivost-psi_id;
+dDPsiTheorOOS = psiS-psi_id;
+dDPsiRealOOS = psiRealOOS - psi_id;
+hold off;
+figure; 
+hold on;
+grid on;
+plot(f,dDPsiReal,'b');
+plot(f,dDPsivost,'g');
+plot(f,dDPsiTheorOOS,'m');
+plot(f,dDPsiRealOOS,'k');
+
+plot(f,dDPsivost,'r');
+
+xlabel('i');
+ylabel('dDPsi,рад/c');
+legend({'Погрешность между реальной и идеальной скоростью поворота',
+    'Погрешность между идеальной и восстановленной скоростью поворота',
+    'Погрешность между идеальной и теоретической скоростью поворота с ООС',
+    'Погрешность между идеальной и реальной скоростью поворота с ООС'
+    },'Location','southwest');
+title('График погрешностей dPsi');
+
+hold off;
