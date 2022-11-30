@@ -556,29 +556,3 @@ legend({'Скорость платформы снятая датчиками','Идеальная предполагаемая скорость
 hold off;
 %}
 
-%dDPsi 
-dDPsiReal = dpsi-Omid;
-dDPsivost = Psivost-psi_id;
-dDPsiTheorOOS = psiS-psi_id;
-dDPsiRealOOS = psiRealOOS - psi_id;
-hold off;
-figure; 
-hold on;
-grid on;
-plot(f,dDPsiReal,'b');
-plot(f,dDPsivost,'g');
-plot(f,dDPsiTheorOOS,'m');
-plot(f,dDPsiRealOOS,'k');
-
-plot(f,dDPsivost,'r');
-
-xlabel('i');
-ylabel('dDPsi,рад/c');
-legend({'Погрешность между реальной и идеальной скоростью поворота',
-    'Погрешность между идеальной и восстановленной скоростью поворота',
-    'Погрешность между идеальной и теоретической скоростью поворота с ООС',
-    'Погрешность между идеальной и реальной скоростью поворота с ООС'
-    },'Location','southwest');
-title('График погрешностей dPsi');
-
-hold off;
