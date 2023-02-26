@@ -1,0 +1,204 @@
+inputDataRob = dlmread('D:\UMRU\8term\lab1\UtkinVoloshanin_lr1.txt');
+%введем начальные параметры, сн€тые с робота 
+%и переведем их в углы f
+A1 = inputDataRob(:,1);
+A2 = inputDataRob(:,2);
+A3 = inputDataRob(:,3);
+A4 = inputDataRob(:,4);
+A5 = inputDataRob(:,5);
+f1 = -A1+2.9496;
+f2 = A2 - 1.1345;
+f3 = A3+2.5654;
+f4 = A4 -1.8290;
+f5 = -A5 + 2.9300;
+dT = 0.05;
+%найдем скорости n-го звена манипул€тора
+% в iй промежуток времени
+for i = 2:1:length(f1)
+    V1(i-1) = (f1(i)-f1(i-1))/dT;
+    V2(i-1) = (f2(i)-f2(i-1))/dT;
+    V3(i-1) = (f3(i)-f3(i-1))/dT;
+    V4(i-1) = (f4(i)-f4(i-1))/dT;
+    V5(i-1) = (f5(i)-f5(i-1))/dT;
+end
+
+%введем массив T 
+T(1)  = 0;
+for i = 2:1:length(f1)
+    T(i) = T(i-1) + dT; 
+end 
+
+
+%построим графики углов
+figure; 
+p1f1 = plot(T,f1);
+xlabel('врем€, секунды');
+ylabel('угол, радианы');
+grid on;
+title('«акон изменени€ угла 1');
+
+figure; 
+p1f2 = plot(T,f2);
+xlabel('врем€, секунды');
+ylabel('угол, радианы');
+grid on;
+title('«акон изменени€ угла 2');
+
+figure; 
+p1f3 = plot(T,f3);
+xlabel('врем€, секунды');
+ylabel('угол, радианы');
+grid on;
+title('«акон изменени€ угла 3');
+
+figure; 
+p1f4 = plot(T,f4);
+xlabel('врем€, секунды');
+ylabel('угол, радианы');
+grid on;
+title('«акон изменени€ угла 4');
+
+figure; 
+p1f5 = plot(T,f5);
+xlabel('врем€, секунды');
+ylabel('угол, радианы');
+grid on;
+title('«акон изменени€ угла 5');
+
+
+%создадим массив времени на один меньше
+Tspeed = T;
+Tspeed(length(f1)) = [];
+
+%построим графики скоростей
+
+%построим графики углов
+figure; 
+p2V1 = plot(Tspeed,V1);
+xlabel('врем€, секунды');
+ylabel('—корость, радианы/с');
+grid on;
+title('«акон изменени€ скорости 1');
+
+figure; 
+p2V2 = plot(Tspeed,V2);
+xlabel('врем€, секунды');
+ylabel('—корость, радианы/с');
+grid on;
+title('«акон изменени€ скорости 2');
+
+figure; 
+p2V3 = plot(Tspeed,V3);
+xlabel('врем€, секунды');
+ylabel('—корость, радианы/с');
+grid on;
+title('«акон изменени€ скорости 3');
+
+figure; 
+p2V4 = plot(Tspeed,V4);
+xlabel('врем€, секунды');
+ylabel('—корость, радианы/с');
+grid on;
+title('«акон изменени€ скорости 4');
+
+figure; 
+p2V5 = plot(Tspeed,V5);
+xlabel('врем€, секунды');
+ylabel('—корость, радианы/с');
+grid on;
+title('«акон изменени€ скорости 5');
+
+%найдем максимальное значени€ скоростей 
+V1max = max(abs(V1));
+V2max = max(abs(V2));
+V3max = max(abs(V3));
+V4max = max(abs(V4));
+V5max = max(abs(V5));
+
+%разность начальных и конечных углов
+
+delta_f1_start_finish = abs( 
+
+
+
+%изучим параметры качества переходного процесса 
+
+%установившеес€ значение
+x_end = f1((length(f1)));
+
+if (x_end-f1(1)) > 0
+    x_max = max(f1);
+elseif (x_end - f1(1)) < 0 
+    x_max = min(f1);
+end
+%перерегулирование 
+pereregul = x_max - x_end;
+%относительное перерегулирование
+otn_pereregul = 100*pereregul/x_end;
+%допустимое отклонение
+otkl = 0.05*abs(x_end);
+%¬рем€ переходного процесса 
+for i = length(f1):-1:1
+    if( abs(x_end - f5(i))> otkl)
+        t_est = i*dT
+        break
+    end
+end
+        
+%второй пункт 
+
+%введем идеальные конечные координаты
+A1_id = 2.5;
+A2_id = 0.5;
+A3_id = -1.5;
+A4_id = 3.0;
+A5_id = 2.5;
+
+f1_id = -A1_id+2.9496;
+f2_id  = A2_id - 1.1345;
+f3_id  = A3_id+2.5654;
+f4_id  = A4_id -1.8290;
+f5_id  = -A5_id + 2.9300;
+
+
+%ќпределим абсолютную погрешность 
+%позиционировани€ дл€ каждого звена
+
+df1 = f1_id - f1(length(f1));
+df2 = f2_id - f2(length(f1));
+df3 = f3_id - f3(length(f1));
+df4 = f4_id - f4(length(f1));
+df5 = f5_id - f5(length(f1));
+
+%ќпределим относительную
+%погрешность позиционировани€
+
+d1 = df1/f1_id;
+d2 = df2/f2_id;
+d3 = df3/f3_id;
+d4 = df4/f4_id;
+d5 = df5/f5_id;
+
+% третий пункт 
+l1 = 0.07; l2 = 0.155; l3 =0.135; l45 = 0.2176; d1 = 0.033;
+
+xA = d1 + l2*sin(f2)+l3*sin(f2+f3)+l45*sin(f2+f3+f4);
+zA = l1 + l2*cos(f2)+l3*cos(f2+f3)+l45*cos(f2+f3+f4);
+thetha = f2 + f3+ f4 - pi/2;
+
+figure; 
+plot(xA,zA);
+grid on;
+
+%трехмерный график
+
+Z = zA;
+X = xA.*cos(thetha);
+Y = xA.*sin(thetha);
+
+figure; 
+plot3(X,Y,Z);
+xlabel('x');
+ylabel('y');
+zlabel('z');
+grid on
