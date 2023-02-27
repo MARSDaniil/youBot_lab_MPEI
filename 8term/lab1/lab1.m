@@ -123,8 +123,17 @@ delta_f3_start_finish = abs(f3(1)-f3(length(f1)));
 delta_f4_start_finish = abs(f4(1)-f4(length(f1)));
 delta_f5_start_finish = abs(f5(1)-f5(length(f1)));
 
-
-
+%построим графики зависимости разностей скоростей и максимальных скоростей
+figure; 
+hold on;
+grid on;
+plot(V1max, delta_f1_start_finish,'-o');
+plot(V2max, delta_f2_start_finish,'-o');
+plot(V3max, delta_f3_start_finish,'-o');
+plot(V4max, delta_f4_start_finish,'-o');
+plot(V5max, delta_f5_start_finish,'-o');
+xlabel('Vmax,рад/с');
+ylabel('|f(0)-f(end)|,рад');
 %изучим параметры качества переходного процесса 
 
 %установившееся значение
