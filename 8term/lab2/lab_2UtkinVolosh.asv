@@ -72,7 +72,7 @@ phi2m(i) = atan2(l2+l3*cos(phi3m(i)),l3*sin(phi3m(i)))-atan2(zv,xv);
 phi4m(i) = thetha -phi2m(i)-phi3m(i)+pi/2;
 end 
 
-%ограничения для углов
+%restrictions for rotation angles
 
 for i = 1:1:length(f1)
     g2u(i) = 2.62 - 1.13;
@@ -84,20 +84,31 @@ for i = 1:1:length(f1)
 end
 
 
-
+%create plots of angles
 figure;
 hold on;
 grid on;
 plot(T,phi2p);
-plot(T,phi2m);
+%%plot(T,phi2m);
+plot(T,f2);
 plot(T,g2u);
+plot(T,g2l);
+xlabel('time,sec');
+ylabel('phi2,rad');
+legend({'Ideal phi','Real phi','upper line','bottom line'},'Location','southwest')
 hold off;
 
 figure;
 hold on;
 grid on;
 plot(T,phi3p);
-plot(T,phi3m);
+%plot(T,phi3m);
+plot(T,f3);
+plot(T,g3u);
+plot(T,g3l);
+xlabel('time,sec');
+ylabel('phi3,rad');
+legend({'Ideal phi','Real phi','upper line','bottom line'},'Location','southwest')
 hold off;
 
 
@@ -105,5 +116,26 @@ figure;
 hold on;
 grid on;
 plot(T,phi4p);
-plot(T,phi4m);
+%plot(T,phi4m);
+plot(T,f4);
+plot(T,g4u);
+plot(T,g4l);
+xlabel('time,sec');
+ylabel('phi4,rad');
+legend({'Ideal phi','Real phi','upper line','bottom line'},'Location','southwest')
 hold off;
+
+%create real translation
+
+xAReal = d1 + l2*sin(phi2p)+l3*sin(phi2p + phi3p) + l45*sin(phi2p+phi3p+phi4p);
+zAReal = l1 + l2*cos(phi2p)+l3*cos(phi2p + phi3p) + l45*cos(phi2p+phi3p+phi4p);
+thethaReal = phi2p + phi3p + phi4p - pi/2;
+
+
+
+
+figure;
+hold on;
+grid on;
+plot(X,Z)
+plot(xAReal,zAReal)
