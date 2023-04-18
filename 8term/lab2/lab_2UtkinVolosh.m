@@ -289,4 +289,22 @@ SKOdX = sqrt(dXsrSumm/(length(f1)-1))
 SKOdZ = sqrt(dZsrSumm/(length(f1)-1))
 SKOdelPsi = sqrt(delThetthaSumm/(length(f1)-1))
 
+for i = 1:1:length(f1)
+   thetha(i) = -1;
+end
+
+%mismatch in the angles of real and ideal
+
+deltaf2 = phi2m - f2;
+deltaf3 = phi3m - f3;
+deltaf4 = phi4m - f4;
+
+variables = {'thethaIdeal,   xIdeal,   zIdeal ,  deltaThetta,   deltaX  ,  deltaZ, deltaf2, deltaf3, deltaf4'};
+data = [thetha' X' Z' deltaThetta' deltaX' deltaZ' deltaf2' deltaf3' deltaf4' ];
+sw = ['' sprintf('%s', variables{:}) sprintf('\n')];
+sw = [sw sprintf('%.5f  %.5f  %.5f  %.5f %.5f %.5f %.5f %.5f %.5f\n', data')];
+fid = fopen('dataFrom2To4.txt', 'wt');
+fprintf(fid, '%s', sw);
+fclose(fid);
+type('dataFrom2To4.txt');
 
