@@ -128,12 +128,9 @@ lab4_delta_fi3_Real = fi3_Ideal - lab4_f3_real;
 lab4_delta_fi4_Real = fi4_Ideal - lab4_f4_real;
 
 lab4_delta_X_Model = X_Ideal - lab4_X_model;
-lab4_delta_Z_Model = Z_Ideal - lab4_Z_model;
+lab4_delta_Z_Model = X_Ideal - lab4_X_model;
 
-lab4_delta_X_Real = X_Ideal - lab4_X_real;
-lab4_delta_Z_Real = Z_Ideal - lab4_Z_real;
-
-%delta fi2
+%fi2_lab4
 figure;
 hold on;
 grid on;
@@ -146,7 +143,7 @@ ylabel('delta fi2,rad');
 legend({'lab 4 model','lab 4 real','lab 2 real'},'Location','southwest')
 hold off;
 
-%delta fi3
+%fi3_lab4
 figure;
 hold on;
 grid on;
@@ -159,7 +156,7 @@ ylabel('delta fi3,rad');
 legend({'lab 4 model','lab 4 real','lab 2 real'},'Location','southwest')
 hold off;
 
-%delta fi4
+%fi4_lab4
 figure;
 hold on;
 grid on;
@@ -172,30 +169,4 @@ ylabel('delta fi4,rad');
 legend({'lab 4 model','lab 4 real','lab 2 real'},'Location','southwest')
 hold off;
 
-%delta X
 
-figure;
-hold on;
-grid on;
-plot(T,lab4_delta_X_Model);
-plot(T,lab4_delta_X_Real);
-plot(T,lab2_deltaX);
-
-xlabel('time,sec');
-ylabel('delta X');
-legend({'lab 4 model','lab 4 real','lab 2 real'},'Location','southwest')
-hold off;
-
-%delta Z
-
-figure;
-hold on;
-grid on;
-plot(T,lab4_delta_Z_Model);
-plot(T,lab4_delta_Z_Real);
-plot(T,lab2_deltaZ);
-
-xlabel('time,sec');
-ylabel('delta Z');
-legend({'lab 4 model','lab 4 real','lab 2 real'},'Location','southwest')
-hold off;
